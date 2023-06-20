@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lawyer/components/navigation.dart';
 import 'package:lawyer/components/text_widget.dart';
 import 'package:lawyer/constants.dart';
+import 'package:lawyer/view/view/Admin/cases/evidence.dart';
+import 'package:lawyer/view/view/Admin/cases/remarks.dart';
 
-class CaseDetails extends StatelessWidget {
+class CaseDetails extends StatefulWidget {
   final DocumentSnapshot caseDetails;
-
-  const CaseDetails({Key? key, required this.caseDetails}) : super(key: key);
+  final String docid;
+  const CaseDetails(
+      {super.key, required this.caseDetails, required this.docid});
 
   @override
+  State<CaseDetails> createState() => _CaseDetailsState();
+}
+
+class _CaseDetailsState extends State<CaseDetails> {
+  @override
   Widget build(BuildContext context) {
-    // Add implementation for the case detail page
     return Scaffold(
       backgroundColor: Colors.blue[50],
       appBar: AppBar(
@@ -26,7 +34,7 @@ class CaseDetails extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextWidget(
-                text: "Admin Name: ${caseDetails['adminname']}",
+                text: "Admin Name: ${widget.caseDetails['adminname']}",
                 size: 20,
                 fontWeight: FontWeight.w500,
                 textoverflow: TextOverflow.visible,
@@ -35,117 +43,120 @@ class CaseDetails extends StatelessWidget {
                 height: 15,
               ),
               TextWidget(
-                text: "Client Name: ${caseDetails['clientname']}",
+                text: "Client Name: ${widget.caseDetails['clientname']}",
                 size: 20,
                 fontWeight: FontWeight.w500,
               ),
-
-              const SizedBox(height: 15),
-
-              TextWidget(
-                text: "Case Type: ${caseDetails['casetype']}",
-                size: 20,
-                fontWeight: FontWeight.w500,
-              ),
-
-              SizedBox(
-                height: 15,
-              ),
-
-              TextWidget(
-                text: "Client Email: ${caseDetails['clientemail']}",
-                size: 20,
-                fontWeight: FontWeight.w500,
-              ),
-
-              SizedBox(
-                height: 15,
-              ),
-
-              TextWidget(
-                text: "Case No: ${caseDetails['caseno']}",
-                size: 20,
-                fontWeight: FontWeight.w500,
-              ),
-
-              SizedBox(
-                height: 15,
-              ),
-
-              TextWidget(
-                text: "Court Name: ${caseDetails['courtname']}",
-                size: 20,
-                fontWeight: FontWeight.w500,
-              ),
-
-              SizedBox(
-                height: 15,
-              ),
-
-              TextWidget(
-                text: "Date: ${caseDetails['date']}",
-                size: 20,
-                fontWeight: FontWeight.w500,
-              ),
-
-              SizedBox(
-                height: 15,
-              ),
-
-              TextWidget(
-                text: "Hearing: ${caseDetails['hearing']}",
-                size: 20,
-                fontWeight: FontWeight.w500,
-              ),
-
-              SizedBox(
-                height: 15,
-              ),
-
-              TextWidget(
-                text: "Judge Name: ${caseDetails['judgename']}",
-                size: 20,
-                fontWeight: FontWeight.w500,
-              ),
-
               const SizedBox(height: 15),
               TextWidget(
-                text: "On Behalf Of: ${caseDetails['onbehave']}",
+                text: "Case Type: ${widget.caseDetails['casetype']}",
                 size: 20,
                 fontWeight: FontWeight.w500,
               ),
-
-              const SizedBox(height: 15),
-
+              SizedBox(
+                height: 15,
+              ),
               TextWidget(
-                text: "Pet/Def Name: ${caseDetails['petname']}",
+                text: "Client Email: ${widget.caseDetails['clientemail']}",
+                size: 20,
+                fontWeight: FontWeight.w500,
+              ),
+              SizedBox(
+                height: 15,
+              ),
+              TextWidget(
+                text: "Case No: ${widget.caseDetails['caseno']}",
+                size: 20,
+                fontWeight: FontWeight.w500,
+              ),
+              SizedBox(
+                height: 15,
+              ),
+              TextWidget(
+                text: "Court Name: ${widget.caseDetails['courtname']}",
+                size: 20,
+                fontWeight: FontWeight.w500,
+              ),
+              SizedBox(
+                height: 15,
+              ),
+              TextWidget(
+                text: "Date: ${widget.caseDetails['date']}",
+                size: 20,
+                fontWeight: FontWeight.w500,
+              ),
+              SizedBox(
+                height: 15,
+              ),
+              TextWidget(
+                text: "Hearing: ${widget.caseDetails['hearing']}",
+                size: 20,
+                fontWeight: FontWeight.w500,
+              ),
+              SizedBox(
+                height: 15,
+              ),
+              TextWidget(
+                text: "Judge Name: ${widget.caseDetails['judgename']}",
+                size: 20,
+                fontWeight: FontWeight.w500,
+              ),
+              const SizedBox(height: 15),
+              TextWidget(
+                text: "On Behalf Of: ${widget.caseDetails['onbehave']}",
+                size: 20,
+                fontWeight: FontWeight.w500,
+              ),
+              const SizedBox(height: 15),
+              TextWidget(
+                text: "Pet/Def Name: ${widget.caseDetails['petname']}",
                 size: 20,
                 fontWeight: FontWeight.w500,
                 textoverflow: TextOverflow.visible,
               ),
-
-              SizedBox(
+              const SizedBox(
                 height: 15,
               ),
-
               TextWidget(
-                text: "On behalf of: ${caseDetails['onbehave']}",
+                text: "On behalf of: ${widget.caseDetails['onbehave']}",
                 size: 20,
                 fontWeight: FontWeight.w500,
               ),
-
-              SizedBox(
+              const SizedBox(
                 height: 15,
               ),
-
-              TextWidget(
-                text: "Judge Remarks: ${caseDetails['remarks']}",
-                size: 20,
-                fontWeight: FontWeight.w500,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const TextWidget(
+                    text: 'Remarks',
+                    size: 20,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  TextButton(
+                      onPressed: () {
+                        MyNavigation.push(
+                            context, Remarks(docsid: widget.docid));
+                      },
+                      child: const Text('See All'))
+                ],
               ),
-// Add more TextWidgets to display other case details
-
-              // Add implementation for displaying case details
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const TextWidget(
+                    text: 'Evidence',
+                    size: 20,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  TextButton(
+                      onPressed: () {
+                        MyNavigation.push(
+                            context, Evidence(docsid: widget.docid));
+                      },
+                      child: const Text('See All'))
+                ],
+              )
             ],
           ),
         ),

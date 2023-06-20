@@ -8,6 +8,7 @@ import 'package:lawyer/view/view/Admin/cases/cases.dart';
 import 'package:lawyer/view/view/Admin/client/clients.dart';
 import 'package:lawyer/view/view/Admin/home_screen.dart';
 import 'package:lawyer/view/view/Client/home.dart';
+import 'package:lawyer/view/view/bottom_nav.dart';
 import 'package:lawyer/view/view/casetype/casetype.dart';
 import 'package:lawyer/view/view/courtsname/courtname.dart';
 
@@ -42,7 +43,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             ),
             ListTile(
               onTap: () {
-                MyNavigation.pushstatic(context, const AdminHome());
+                MyNavigation.pushstatic(context, const Home());
               },
               leading: Icon(
                 Icons.dashboard,
@@ -111,22 +112,6 @@ class _CustomDrawerState extends State<CustomDrawer> {
               ),
               title: TextWidget(
                 text: 'Courts Name',
-                size: 20,
-                textcolor: MyColors.primarycolor,
-              ),
-            ),
-            SizedBox(height: 5),
-            ListTile(
-              onTap: () {
-                MyNavigation.push(context, Clients());
-              },
-              leading: Icon(
-                Icons.numbers,
-                size: 25,
-                color: MyColors.primarycolor,
-              ),
-              title: TextWidget(
-                text: 'Clients',
                 size: 20,
                 textcolor: MyColors.primarycolor,
               ),

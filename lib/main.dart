@@ -6,7 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:lawyer/view/view/auth/signin_screen.dart';
 
-const bool use_emualtor = true;
+const bool use_emualtor = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

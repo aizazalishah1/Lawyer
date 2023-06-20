@@ -1,10 +1,17 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:lawyer/components/button_widget.dart';
+import 'package:lawyer/components/navigation.dart';
 import 'package:lawyer/components/text_widget.dart';
 import 'package:lawyer/components/textfield_widget.dart';
 import 'package:lawyer/constants.dart';
 import 'package:lawyer/utils/Dateformat.dart';
+import 'package:lawyer/view/view/Admin/cases/evidence.dart';
+import 'package:lawyer/view/view/Admin/cases/remarks.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AddCase extends StatefulWidget {
@@ -27,6 +34,8 @@ class _AddCaseState extends State<AddCase> {
   TextEditingController remarks = TextEditingController();
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  PlatformFile? file;
+  String? downloadURL;
 
   String? behalfdrop;
   String? casedrop;
@@ -49,6 +58,58 @@ class _AddCaseState extends State<AddCase> {
   void initState() {
     super.initState();
     getname();
+  }
+
+  Future<void> selectAndUploadFile() async {
+    print('hi');
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: [
+        'pdf',
+        'doc',
+        'docx',
+        'svg',
+        'jpg',
+        'png'
+      ], // Limit to PDF and Word files
+    );
+
+    if (result != null) {
+      file = result.files.first;
+      setState(() {});
+
+      await uploadFile(file!);
+    } else {
+      // User canceled the file selection
+    }
+  }
+
+  Future<void> uploadFile(PlatformFile file) async {
+    // Get the file path
+    String filePath = file.path!;
+    print(filePath);
+
+    // Create a reference to the Firebase Storage location
+    Reference storageReference =
+        FirebaseStorage.instance.ref().child('files/${file.name}');
+
+    // Upload the file to Firebase Storage
+    UploadTask uploadTask = storageReference.putFile(File(filePath));
+    TaskSnapshot storageSnapshot = await uploadTask.whenComplete(() {});
+
+    // Get the download URL of the uploaded file
+    downloadURL = await storageSnapshot.ref.getDownloadURL();
+    print('this is download');
+    print(downloadURL);
+
+    // Store the file reference in Firestore
+
+    // await FirebaseFirestore.instance.collection('files').add({
+    //   'name': file.name,
+    //   'url': downloadURL,
+    // });
+
+    // File uploaded and stored successfully
   }
 
   void getname() async {
@@ -83,7 +144,7 @@ class _AddCaseState extends State<AddCase> {
             year = value['date'];
             editdocid = value['docid'];
             email = value['clientemail'];
-            remarks.text = value['remarks'];
+
             // setState(() {});
           })
         : null;
@@ -134,7 +195,7 @@ class _AddCaseState extends State<AddCase> {
     setState(() {});
   }
 
-  void addcase() {
+  void addcase() async {
     String id = _firestore
         .collection('Users')
         .doc(adminname)
@@ -161,8 +222,53 @@ class _AddCaseState extends State<AddCase> {
       'adminname': adminname,
       'docid': widget.action == 'edit' ? editdocid : id,
       'clientemail': email,
-      'remarks': widget.action == 'edit' ? remarks.text : '',
     });
+
+    if (widget.action == 'edit') {
+      String id = _firestore
+          .collection('Users')
+          .doc(adminname)
+          .collection('Cases')
+          .doc(editdocid)
+          .collection('Remarks')
+          .doc()
+          .id;
+      await _firestore
+          .collection('Users')
+          .doc(adminname)
+          .collection('Cases')
+          .doc(editdocid)
+          .collection('Remarks')
+          .doc(id)
+          .set({
+        'remarks': remarks.text,
+        'date': selectdate,
+        'docid': id,
+      });
+
+      if (file != null) {
+        String id = _firestore
+            .collection('Users')
+            .doc(adminname)
+            .collection('Cases')
+            .doc(editdocid)
+            .collection('Evidence')
+            .doc()
+            .id;
+        _firestore
+            .collection('Users')
+            .doc(adminname)
+            .collection('Cases')
+            .doc(editdocid)
+            .collection('Evidence')
+            .doc(id)
+            .set({
+          'name': file!.name,
+          'url': downloadURL,
+          'docid': id,
+        });
+      }
+    }
 
     _firestore
         .collection('Clients')
@@ -182,7 +288,7 @@ class _AddCaseState extends State<AddCase> {
       'date': selectdate ?? '',
       'adminname': adminname,
       'email': email,
-      'remarks': remarks,
+      'remarks': '',
       'docid': widget.action == 'edit' ? editdocid : id,
     });
   }
@@ -511,16 +617,26 @@ class _AddCaseState extends State<AddCase> {
                 widget.action == 'edit'
                     ? Column(
                         children: [
-                          const SizedBox(
-                            height: 15,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const TextWidget(
+                                alignment: Alignment.topLeft,
+                                text: 'Judge Remarks',
+                                size: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              TextButton(
+                                  onPressed: () {
+                                    MyNavigation.push(context,
+                                        Remarks(docsid: widget.docsid));
+                                  },
+                                  child: TextWidget(
+                                    text: 'See All',
+                                    textcolor: MyColors.primarycolor,
+                                  ))
+                            ],
                           ),
-                          const TextWidget(
-                            alignment: Alignment.topLeft,
-                            text: 'Judge Remarks',
-                            size: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          const SizedBox(height: 15),
                           TextFieldWidget(
                             read: false,
                             // textcolor: MyColors.white,
@@ -542,12 +658,44 @@ class _AddCaseState extends State<AddCase> {
                               }
                             },
                           ),
+                          Row(
+                            children: [
+                              const Expanded(
+                                child: TextWidget(
+                                  alignment: Alignment.topLeft,
+                                  text: 'Evidence',
+                                  size: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Expanded(
+                                  child: Text(
+                                file?.name ?? '',
+                                overflow: TextOverflow.ellipsis,
+                              )),
+                              TextButton(
+                                  onPressed: () {
+                                    selectAndUploadFile();
+                                  },
+                                  child: TextWidget(
+                                    text: 'Select ',
+                                    textcolor: MyColors.primarycolor,
+                                  )),
+                              TextButton(
+                                  onPressed: () {
+                                    MyNavigation.push(context,
+                                        Evidence(docsid: widget.docsid));
+                                  },
+                                  child: TextWidget(
+                                    text: 'See All ',
+                                    textcolor: MyColors.primarycolor,
+                                  ))
+                            ],
+                          )
                         ],
                       )
                     : Container(),
-                const SizedBox(
-                  height: 15,
-                ),
+
                 const TextWidget(
                   alignment: Alignment.topLeft,
                   text: 'Case date',
@@ -557,8 +705,7 @@ class _AddCaseState extends State<AddCase> {
                 const SizedBox(
                   height: 15,
                 ),
-                const TextWidget(
-                    alignment: Alignment.topLeft, text: 'Case Status'),
+
                 Container(
                   padding: const EdgeInsets.only(left: 10, right: 10),
                   height: 50,

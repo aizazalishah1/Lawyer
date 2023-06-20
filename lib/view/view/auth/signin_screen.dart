@@ -5,6 +5,7 @@ import 'package:lawyer/components/navigation.dart';
 import 'package:lawyer/view/view/Admin/home_screen.dart';
 import 'package:lawyer/view/view/Client/home.dart';
 import 'package:lawyer/view/view/auth/signup_screen.dart';
+import 'package:lawyer/view/view/bottom_nav.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../components/button_widget.dart';
@@ -214,7 +215,7 @@ class _SigninScreenState extends State<SigninScreen> {
                                           //use local database sharedprefrences for saving username
                                           storename();
                                           MyNavigation.push(
-                                              context, const AdminHome());
+                                              context, const Home());
                                         } else {
                                           storeemail();
                                           MyNavigation.push(
